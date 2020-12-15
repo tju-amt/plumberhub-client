@@ -1,2 +1,2 @@
 # plumberhub-client
-A Client SDK impliemented by python
+A Client SDK of PlumberHub impliemented by python
