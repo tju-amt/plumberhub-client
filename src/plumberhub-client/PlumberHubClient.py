@@ -12,57 +12,57 @@ def noop():
 class PlumberHubClient:
 
     def __init__(
-            self, hostname, port, clientId,
-            onsample=noop, onerror=noop, onclose=noop
+            self, hostname, port, client_id,
+            on_sample=noop, on_error=noop, on_close=noop
     ):
         host = hostname + ':' + str(port)
-        baseURL = 'http://' + host + '/api/sdk/client/' + clientId
+        base_url = 'http://' + host + '/api/sdk/client/' + client_id
 
-        self.__baseURL = baseURL
-        self.onsample = onsample
-        self.onerror = onerror
-        self.onclose = onclose
+        self._base_url = base_url
+        self.on_sample = on_sample
+        self.onerror = on_error
+        self.onclose = on_close
 
         # Fetching ticket
-        response = requests.post(self.__baseURL + '/session/ticket')
+        response = requests.post(self._base_url + '/session/ticket')
         credential = response.json()['credential']
 
         # Establishing Data Sample Channel - websocket
         def listen():
             loop = asyncio.new_event_loop()
             asyncio.set_event_loop(loop)
-            wsURL = 'ws://' + host + '/client/' + clientId + '/session?credential=' + credential
+            ws_url = 'ws://' + host + '/client/' + client_id + '/session?credential=' + credential
 
-            async def sampleHandler():
-                async with websockets.connect(uri=wsURL) as ws:
-                    while (True):
+            async def sample_handler():
+                async with websockets.connect(uri=ws_url) as ws:
+                    while True:
                         sample = Sample()
                         sample.MergeFromString(await ws.recv())
-                        onsample(sample)
+                        on_sample(sample)
 
-            loop.run_until_complete(sampleHandler())
-            onclose()
+            loop.run_until_complete(sample_handler())
+            on_close()
 
-        listeningThread = threading.Thread(target=listen, args=())
-        listeningThread.start()
+        listening_thread = threading.Thread(target=listen, args=())
+        listening_thread.start()
 
-    def __state(self):
-        return self.__baseURL + '/device/state/'
+    def _state(self):
+        return self._base_url + '/device/state/'
 
     def get_device(self):
-        response = requests.get(self.__baseURL + '/device')
+        response = requests.get(self._base_url + '/device')
 
-        if (response.status_code == 200):
+        if response.status_code == 200:
             return response.json()
 
     def get(self, key):
-        response = requests.get(self.__state() + key)
+        response = requests.get(self._state() + key)
 
-        if (response.status_code == 200):
+        if response.status_code == 200:
             return response.json()['value']
 
     def set(self, key, value):
-        response = requests.put(self.__state() + key, {'value': value})
+        response = requests.put(self._state() + key, {'value': value})
 
-        if (response.status_code == 200):
+        if response.status_code == 200:
             return response.json()['value']
