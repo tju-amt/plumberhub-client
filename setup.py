@@ -18,7 +18,7 @@ URL = 'https://github.com/lichaozhy/plumberhub-client.git'
 EMAIL = 'chaos2lee@qq.com'
 AUTHOR = 'ChaosLee'
 REQUIRES_PYTHON = '>=3.7.0'
-VERSION = '0.1.2'
+VERSION = '0.1.3'
 
 # What packages are required for this module to be executed?
 REQUIRED = [
@@ -91,6 +91,8 @@ class UploadCommand(Command):
 
         sys.exit()
 
+packages=find_packages(exclude=["tests", "*.tests", "*.tests.*", "tests.*"])
+print(packages)
 
 # Where the magic happens:
 setup(
@@ -103,7 +105,9 @@ setup(
     author_email=EMAIL,
     python_requires=REQUIRES_PYTHON,
     url=URL,
-    packages=find_packages(exclude=["tests", "*.tests", "*.tests.*", "tests.*"]),
+    # packages=packages,
+    package_dir = {'': 'src'},
+    packages=['plumberhub-client'],
     # If your package is a single module, use this instead of 'packages':
     # py_modules=['mypackage'],
 
