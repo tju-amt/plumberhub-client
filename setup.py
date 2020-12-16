@@ -18,7 +18,7 @@ URL = 'https://github.com/lichaozhy/plumberhub-client.git'
 EMAIL = 'chaos2lee@qq.com'
 AUTHOR = 'ChaosLee'
 REQUIRES_PYTHON = '>=3.7.0'
-VERSION = '0.1.3'
+VERSION = '0.1.4'
 
 # What packages are required for this module to be executed?
 REQUIRED = [
@@ -107,7 +107,7 @@ setup(
     url=URL,
     # packages=packages,
     package_dir = {'': 'src'},
-    packages=['plumberhub-client'],
+    packages=['plumberhub'],
     # If your package is a single module, use this instead of 'packages':
     # py_modules=['mypackage'],
 

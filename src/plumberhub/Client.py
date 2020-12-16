@@ -12,16 +12,16 @@ def noop():
 class PlumberHubClient:
 
     def __init__(
-            self, hostname, port, client_id,
-            on_sample=noop, on_error=noop, on_close=noop
+        self,
+        hostname, port, client_id,
+        onsample=noop, onerror=noop, onclose=noop
     ):
         host = hostname + ':' + str(port)
-        base_url = 'http://' + host + '/api/sdk/client/' + client_id
 
-        self._base_url = base_url
-        self.on_sample = on_sample
-        self.onerror = on_error
-        self.onclose = on_close
+        self._base_url = 'http://' + host + '/api/sdk/client/' + client_id
+        self.onsample = onsample
+        self.onerror = onerror
+        self.onclose = onclose
 
         # Fetching ticket
         response = requests.post(self._base_url + '/session/ticket')
@@ -38,10 +38,10 @@ class PlumberHubClient:
                     while True:
                         sample = Sample()
                         sample.MergeFromString(await ws.recv())
-                        on_sample(sample)
+                        self.onsample(sample)
 
             loop.run_until_complete(sample_handler())
-            on_close()
+            onclose()
 
         listening_thread = threading.Thread(target=listen, args=())
         listening_thread.start()

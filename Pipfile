@@ -5,12 +5,12 @@ name = "pypi"
 
 [packages]
 websockets = "*"
-pylint = "*"
 requests = "*"
 protobuf = "*"
 
 [dev-packages]
 pylint = "*"
+rope = "*"
 
 [requires]
-python_version = "3.9"
+python_version = "3.7"
