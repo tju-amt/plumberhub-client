@@ -2,14 +2,14 @@ import requests
 import websockets
 import asyncio
 import threading
+from .Store import SampleStore
 from .plumberhub_pb2 import Sample
-
 
 def noop():
     pass
 
-
 class PlumberHubClient:
+    store = SampleStore()
 
     def __init__(
         self,
