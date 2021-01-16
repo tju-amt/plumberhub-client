@@ -17,10 +17,26 @@ pipenv install plumberhub-client
 
 Here's a example. It will print each sample.
 ```python
-from src.plumberhub.Client import PlumberHubClient
+from plumberhub import PlumberHubClient
 
 def handleSample(sample):
     print(sample)
+
+def sayHello():
+    print('hello')
+
+    device = client.get_device()
+    gain = client.get_gain()
+    sampling_rate = client.get_sampling_rate()
+    
+    print(device)
+    print(gain)
+    print(sampling_rate)
+        
+    client.start()
+
+def sayBye():
+    print('bye')
 
 client = PlumberHubClient(
     # plumberhub server hostname
@@ -34,7 +50,16 @@ client = PlumberHubClient(
 
     # Do something on sample incoming
     onsample = handleSample,
+
+    onready = sayHello,
+
+    onclose = sayBye
 )
+
+time.sleep(2)
+client.stop()
+client.close()
+
 ```
 
 # Working with BDF/EDF file

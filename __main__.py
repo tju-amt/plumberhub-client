@@ -1,16 +1,35 @@
 from src.plumberhub.Client import PlumberHubClient
 import time
 
-bbb=0
-
 def p(sample):
-    print(sample.at)
+    print(sample)
+
+def onclose():
+    print(88)
+
+def onready():
+    print('hello')
+
+    device = client.get_device()
+    gain = client.get_gain()
+    sampling_rate = client.get_sampling_rate()
+    
+    print(device)
+    print(gain)
+    print(sampling_rate)
+        
+    client.start()
 
 client = PlumberHubClient(
     hostname = '127.0.0.1',
     port = 8080,
-    client_id = 'f7e9e4cabe7ed2f95ee506199cd41e0a0d352e91466ef7f2c87793a92e76d198',
+    client_id = '314dee1f82e82106c8ab4d51ee933c9a4c09209dfebc35b2f2f5fd55be73302e',
     onsample = p,
     onerror = p,
-    onclose = p
+    onclose = onclose,
+    onready = onready
 )
+
+time.sleep(2)
+client.stop()
+client.close()

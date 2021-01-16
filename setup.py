@@ -18,7 +18,7 @@ URL = 'https://github.com/lichaozhy/plumberhub-client.git'
 EMAIL = 'chaos2lee@qq.com'
 AUTHOR = 'ChaosLee'
 REQUIRES_PYTHON = '>=3.7.0'
-VERSION = '0.1.5'
+VERSION = '0.2.0'
 
 # What packages are required for this module to be executed?
 REQUIRED = [
