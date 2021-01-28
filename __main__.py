@@ -2,7 +2,7 @@ from src.plumberhub.Client import PlumberHubClient
 import time
 
 def p(sample):
-    print(sample)
+    print(sample.at)
 
 def onclose():
     print(88)
@@ -18,7 +18,12 @@ def onready():
     print(gain)
     print(sampling_rate)
         
+    time.sleep(10)
     client.start()
+
+    master = client.is_master()
+    print(master)
+    
 
 client = PlumberHubClient(
     hostname = '127.0.0.1',
@@ -31,5 +36,10 @@ client = PlumberHubClient(
 )
 
 time.sleep(2)
+# client.set_gain(24)
+newgain = client.get_gain()
+
+print('\nnew gain:' + str(newgain) + '\n')
+
 client.stop()
 client.close()

@@ -38,7 +38,7 @@ class PlumberHubClient:
 
             async def sample_handler():
                 async with websockets.connect(uri=ws_url) as ws:
-                    self.onready()
+                    threading.Thread(target=self.onready, args=()).start()
 
                     while self._running:
                         sample = Sample()
@@ -53,6 +53,12 @@ class PlumberHubClient:
 
     def close(self):
         self._running = False
+
+    def is_master(self):
+        response = requests.get(self._base_url + '/profile')
+
+        if response.status_code == 200:
+            return response.json()['isMaster']
 
     def get_device(self):
         response = requests.get(self._base_url + '/device')
