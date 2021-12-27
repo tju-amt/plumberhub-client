@@ -2,8 +2,8 @@ import requests
 import websockets
 import asyncio
 import threading
-from .PlumberHub_pb2 import Sample
-from .PlumberHub_pb2 import Event
+from .plumberhub_pb2 import Sample
+from .plumberhub_pb2 import Event
 
 def noop():
     pass
@@ -30,45 +30,49 @@ class PlumberHubClient:
 
         # Fetching ticket
         # Establishing Data / Event Channel - websocket
-        def listen(channel):
-            response = requests.post(self._base_url + '/session/'+channel+'/ticket')
-            credential = response.json()['credential']
-
-            loop = asyncio.new_event_loop()
+        def listen_data(loop):
+            dataresponse = requests.post(self._base_url + '/session/data/ticket')
+            datacreeegdential = dataresponse.json()['credential']
+            ws_url = 'ws://' + host + '/client/' + client_id + '/session/data?credential=' + datacreeegdential
+            
             asyncio.set_event_loop(loop)
-            ws_url = 'ws://' + host + '/client/' + client_id + '/session/'+channel+'?credential=' + credential
-            self._loop = loop
 
-            if(channel == 'data'):
-                async def sample_handler():
-                    async with websockets.connect(uri=ws_url) as ws:
-                        threading.Thread(target=self.onready, args=()).start()
+            async def sample_handler():
+                async with websockets.connect(uri=ws_url) as ws:
 
-                        while self._running:
-                            sample = Sample()
-                            sample.MergeFromString(await ws.recv())
-                            self.onsample(sample)
+                    while self._running:
+                        sample = Sample()
+                        sample.MergeFromString(await ws.recv())
+                        self.onsample(sample)
 
-                loop.run_until_complete(sample_handler())
-                onclose()
+            loop.run_until_complete(sample_handler())    
+            onclose()
 
-            elif(channel == 'event'):
-                async def event_handler():
-                    async with websockets.connect(uri=ws_url) as ws:
-                        threading.Thread(target=self.onready, args=()).start()
+        def listen_event(loop):
+            eventresponse = requests.post(self._base_url + '/session/event/ticket')
+            eventcredential = eventresponse.json()['credential']
+            ws_url = 'ws://' + host + '/client/' + client_id + '/session/event?credential=' + eventcredential
+            
+            asyncio.set_event_loop(loop)
 
-                        while self._running:
-                            event = Event()
-                            event.MergeFromString(await ws.recv())
-                            self.onevent(event)
+            async def event_handler():
+                async with websockets.connect(uri=ws_url) as ws:
 
-                loop.run_until_complete(event_handler())
-                onclose()                
+                    while self._running:
+                        event = Event()
+                        event.MergeFromString(await ws.recv())
+                        self.onevent(event)
 
-        listening_datathread = threading.Thread(target=listen('data'), args=())
+            loop.run_until_complete(event_handler())    
+
+        datathread = asyncio.new_event_loop() 
+        eventthread = asyncio.new_event_loop() 
+
+
+        listening_datathread = threading.Thread(target=listen_data, args=(datathread,))
         listening_datathread.start()
 
-        listening_eventthread = threading.Thread(target=listen('event'), args=())
+        listening_eventthread = threading.Thread(target=listen_event, args=(eventthread,))
         listening_eventthread.start()
 
 
