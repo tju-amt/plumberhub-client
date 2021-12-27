@@ -2,7 +2,8 @@ import requests
 import websockets
 import asyncio
 import threading
-from .plumberhub_pb2 import Sample
+from .PlumberHub_pb2 import Sample
+from .PlumberHub_pb2 import Event
 
 def noop():
     pass
@@ -13,7 +14,8 @@ class PlumberHubClient:
         self,
         hostname, port, client_id,
         onready = noop,
-        onsample=noop, onerror=noop, onclose=noop
+        onsample=noop, onevent = noop, 
+        onerror=noop, onclose=noop
     ):
         host = hostname + ':' + str(port)
 
@@ -21,35 +23,54 @@ class PlumberHubClient:
         self._running = True
 
         self.onsample = onsample
+        self.onevent = onevent
         self.onerror = onerror
         self.onclose = onclose
         self.onready = onready
 
         # Fetching ticket
-        response = requests.post(self._base_url + '/session/ticket')
-        credential = response.json()['credential']
+        # Establishing Data / Event Channel - websocket
+        def listen(channel):
+            response = requests.post(self._base_url + '/session/'+channel+'/ticket')
+            credential = response.json()['credential']
 
-        # Establishing Data Sample Channel - websocket
-        def listen():
             loop = asyncio.new_event_loop()
             asyncio.set_event_loop(loop)
-            ws_url = 'ws://' + host + '/client/' + client_id + '/session?credential=' + credential
+            ws_url = 'ws://' + host + '/client/' + client_id + '/session/'+channel+'?credential=' + credential
             self._loop = loop
 
-            async def sample_handler():
-                async with websockets.connect(uri=ws_url) as ws:
-                    threading.Thread(target=self.onready, args=()).start()
+            if(channel == 'data'):
+                async def sample_handler():
+                    async with websockets.connect(uri=ws_url) as ws:
+                        threading.Thread(target=self.onready, args=()).start()
 
-                    while self._running:
-                        sample = Sample()
-                        sample.MergeFromString(await ws.recv())
-                        self.onsample(sample)
+                        while self._running:
+                            sample = Sample()
+                            sample.MergeFromString(await ws.recv())
+                            self.onsample(sample)
 
-            loop.run_until_complete(sample_handler())
-            onclose()
+                loop.run_until_complete(sample_handler())
+                onclose()
 
-        listening_thread = threading.Thread(target=listen, args=())
-        listening_thread.start()
+            elif(channel == 'event'):
+                async def event_handler():
+                    async with websockets.connect(uri=ws_url) as ws:
+                        threading.Thread(target=self.onready, args=()).start()
+
+                        while self._running:
+                            event = Event()
+                            event.MergeFromString(await ws.recv())
+                            self.onevent(event)
+
+                loop.run_until_complete(event_handler())
+                onclose()                
+
+        listening_datathread = threading.Thread(target=listen('data'), args=())
+        listening_datathread.start()
+
+        listening_eventthread = threading.Thread(target=listen('event'), args=())
+        listening_eventthread.start()
+
 
     def close(self):
         self._running = False
