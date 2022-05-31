@@ -6,7 +6,7 @@ message Sample {
   uint64 at = 1;
   uint32 microsecond = 2;
   uint32 event = 3;
-  repeated sint32 dataList = 4;
+  repeated float dataList = 4;
 }
 
 message Event {
